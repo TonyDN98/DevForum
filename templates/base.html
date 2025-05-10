@@ -33,6 +33,17 @@
                 </form>
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
+                    <li class="nav-item me-2">
+                        <a class="nav-link position-relative" href="{{ url_for('messages') }}">
+                            <i class="bi bi-envelope"></i>
+                            {% if unread_messages_count() > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-notification">
+                                {{ unread_messages_count() }}
+                                <span class="visually-hidden">unread messages</span>
+                            </span>
+                            {% endif %}
+                        </a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ current_user.username }}

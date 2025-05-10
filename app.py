@@ -425,12 +425,20 @@ def utility_processor():
         return Topic.query.count()
     def post_count():
         return Post.query.count()
+    def unread_messages_count():
+        if current_user.is_authenticated:
+            return Message.query.filter_by(
+                recipient_id=current_user.id,
+                is_read=False
+            ).count()
+        return 0
     return {
         'recent_topics': recent_topics,
         'recent_posts': recent_posts,
         'user_count': user_count,
         'topic_count': topic_count,
-        'post_count': post_count
+        'post_count': post_count,
+        'unread_messages_count': unread_messages_count
     }
 if __name__ == '__main__':
     app.run(debug=True)

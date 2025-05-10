@@ -13,6 +13,32 @@ body {
     font-size: 1.5rem;
 }
 
+/* Message notification styling */
+.nav-link .bi-envelope {
+    font-size: 1.2rem;
+}
+
+.badge-notification {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
 /* Card customization */
 .card {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
