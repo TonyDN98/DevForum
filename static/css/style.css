@@ -122,6 +122,112 @@ footer {
     }
 }
 
+/* Code snippet styling */
+pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e1e4e8;
+    border-left: 3px solid #007bff;
+    border-radius: 4px;
+    padding: 16px 16px 16px 3.8em;
+    margin: 16px 0;
+    overflow-x: auto;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+/* Line numbers styling */
+.line-numbers .line-numbers-rows {
+    border-right: 1px solid #ddd;
+    padding-right: 10px;
+}
+
+/* Ensure line numbers are properly aligned */
+.line-numbers {
+    position: relative;
+    padding-left: 3.8em;
+    counter-reset: linenumber;
+}
+
+.line-numbers > code {
+    position: relative;
+    white-space: inherit;
+}
+
+pre:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-left-color: #0056b3;
+}
+
+pre code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    white-space: pre;
+    word-break: normal;
+    word-wrap: normal;
+    color: #333;
+    counter-reset: line;
+    display: block; /* Ensure code is displayed as a block */
+}
+
+pre code .line {
+    display: inline-block;
+    width: 100%;
+}
+
+pre code .line:before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    padding: 0 .5em;
+    margin-right: .5em;
+    color: #888;
+    border-right: 1px solid #ddd;
+    min-width: 2.5em;
+    text-align: right;
+}
+
+.post-content pre, .comment pre {
+    max-width: 100%;
+}
+
+/* Language badge */
+code.language-python::before { content: "Python"; }
+code.language-javascript::before { content: "JavaScript"; }
+code.language-css::before { content: "CSS"; }
+code.language-html::before { content: "HTML"; }
+code.language-java::before { content: "Java"; }
+code.language-csharp::before { content: "C#"; }
+code.language-php::before { content: "PHP"; }
+code.language-plaintext::before { content: "Plain Text"; }
+
+code[class*="language-"]::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #007bff;
+    border-bottom-left-radius: 6px;
+    border-top-right-radius: 3px;
+    opacity: 0.9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Inline code */
+code:not([class*="language-"]) {
+    background-color: #f0f2f4;
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #e83e8c;
+    border: 1px solid #e9ecef;
+}
+
 /* Chat styling */
 .messages-container {
     display: flex;

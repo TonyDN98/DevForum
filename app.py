@@ -33,6 +33,42 @@ def nl2br(value):
         value = str(value)
         return Markup(value.replace('\n', '<br>'))
     return value
+
+@app.template_filter('format_content')
+def format_content(value):
+    if not value:
+        return value
+
+    value = str(value)
+
+    # Process code blocks
+    import re
+    # Updated pattern to be more flexible with whitespace and newlines
+    pattern = r'```([\w-]*)\s*(.*?)\s*```'
+
+    def replace_code_block(match):
+        language = match.group(1).strip() or 'plaintext'
+        code = match.group(2)
+        # Preserve line breaks in the code
+        code = code.replace('\r\n', '\n')  # Normalize line breaks
+        # Escape HTML entities in the code
+        code = code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        return f'<pre class="line-numbers"><code class="language-{language}">{code}</code></pre>'
+
+    # Replace code blocks with properly formatted HTML
+    processed_value = re.sub(pattern, replace_code_block, value, flags=re.DOTALL)
+
+    # Apply nl2br to the rest of the content (outside code blocks)
+    # We need to split by the pre tags and apply nl2br only to the parts outside
+    parts = re.split(r'(<pre class="line-numbers"><code class="language-.*?">.*?</code></pre>)', processed_value, flags=re.DOTALL)
+    result = []
+    for i, part in enumerate(parts):
+        if i % 2 == 0:  # Even parts are outside code blocks
+            result.append(part.replace('\n', '<br>'))
+        else:  # Odd parts are code blocks
+            result.append(part)
+
+    return Markup(''.join(result))
 @app.template_filter('time_since')
 def time_since(dt):
     now = datetime.utcnow()
@@ -199,6 +235,8 @@ def category(category_id, page=1):
 @login_required
 def new_topic(category_id):
     category = Category.query.get_or_404(category_id)
+    if request.method == 'GET':
+        flash('Tip: To insert code, wrap your code in triple backticks with a language name, e.g. ```python for Python code.')
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -226,6 +264,8 @@ def topic(topic_id, page=1):
 @login_required
 def new_post(topic_id):
     topic = Topic.query.get_or_404(topic_id)
+    if request.method == 'GET':
+        flash('Tip: To insert code, wrap your code in triple backticks with a language name, e.g. ```python for Python code.')
     if request.method == 'POST':
         content = request.form.get('content')
         if not content:
@@ -247,6 +287,24 @@ def new_comment(post_id):
     comment = Comment(content=content, user_id=current_user.id, post_id=post_id)
     db.session.add(comment)
     db.session.commit()
+
+    # Check if request is AJAX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Return JSON response for AJAX requests
+        return {
+            'id': comment.id,
+            'content': comment.content,
+            'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'time_since': app.jinja_env.filters['time_since'](comment.created_at),
+            'author': {
+                'id': current_user.id,
+                'username': current_user.username,
+                'profile_url': url_for('profile', username=current_user.username)
+            },
+            'formatted_content': app.jinja_env.filters['format_content'](comment.content)
+        }
+
+    # Return normal redirect for non-AJAX requests
     return redirect(url_for('topic', topic_id=post.topic_id))
 @app.route('/search')
 def search():

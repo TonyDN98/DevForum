@@ -1,6 +1,74 @@
 // Dev Forum JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Prism.js line numbers
+    Prism.plugins.lineNumbers.init();
+
+    // Handle comment form submissions with AJAX
+    const commentForms = document.querySelectorAll('form[action^="/comment/new/"]');
+    commentForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const postId = form.action.split('/').pop();
+            const commentsContainer = form.closest('.flex-grow-1').querySelector('.comments');
+            const textarea = form.querySelector('textarea');
+
+            // Create comments container if it doesn't exist
+            let commentsDiv = commentsContainer;
+            if (!commentsDiv) {
+                commentsDiv = document.createElement('div');
+                commentsDiv.className = 'comments mt-3';
+                commentsDiv.innerHTML = '<h6>Comments:</h6>';
+                form.closest('.flex-grow-1').insertBefore(commentsDiv, form.parentNode);
+            }
+
+            // Send AJAX request
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Create new comment element
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'comment p-2 mb-2 bg-light rounded';
+                commentDiv.innerHTML = `
+                    <div class="d-flex justify-content-between mb-1">
+                        <div>
+                            <a href="${data.author.profile_url}">${data.author.username}</a>
+                        </div>
+                        <div class="text-muted small">
+                            ${data.time_since}
+                        </div>
+                    </div>
+                    <div>${data.formatted_content}</div>
+                `;
+
+                // Add the new comment to the comments container
+                if (!commentsContainer) {
+                    commentsDiv.appendChild(commentDiv);
+                } else {
+                    commentsContainer.appendChild(commentDiv);
+                }
+
+                // Clear the textarea
+                textarea.value = '';
+
+                // Highlight code in the new comment
+                Prism.highlightAllUnder(commentDiv);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting your comment. Please try again.');
+            });
+        });
+    });
+
     // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -13,6 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Popover(popoverTriggerEl);
     });
 
+    // Code snippet insertion functionality has been removed
+    // Users now insert code manually by typing triple backticks and the language name
+
     // Dark mode toggle
     const darkModeToggle = document.getElementById('dark-mode-toggle');
     if (darkModeToggle) {
@@ -20,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.toggle('dark-mode');
             const isDarkMode = document.body.classList.contains('dark-mode');
             localStorage.setItem('darkMode', isDarkMode);
-            
+
             // Update icon
             const icon = darkModeToggle.querySelector('i');
             if (isDarkMode) {
@@ -95,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     markdownPreviews.forEach(preview => {
         const textarea = document.getElementById(preview.dataset.for);
         const previewButton = document.getElementById(preview.dataset.button);
-        
+
         if (textarea && previewButton) {
             previewButton.addEventListener('click', function() {
                 // Simple markdown to HTML conversion
@@ -103,14 +174,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
                     .replace(/\n/g, '<br>');
-                
+
                 preview.innerHTML = html;
                 preview.style.display = 'block';
                 textarea.style.display = 'none';
-                
+
                 this.textContent = 'Edit';
                 this.dataset.mode = 'preview';
-                
+
                 if (this.dataset.mode === 'preview') {
                     preview.style.display = 'none';
                     textarea.style.display = 'block';

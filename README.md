@@ -37,8 +37,9 @@ The application follows a traditional forum structure with categories, topics, p
 ### Content Management
 - **Categories**: Organize discussions into logical categories
 - **Topics**: Create and browse discussion topics within categories
-- **Posts**: Reply to topics with formatted content
+- **Posts**: Reply to topics with formatted content and code snippets
 - **Comments**: Add comments to specific posts for more granular discussions
+- **Code Snippets**: Share code with syntax highlighting for multiple programming languages
 - **Search**: Full-text search across topics and posts
 
 ### Administration
@@ -249,6 +250,29 @@ Rate limiting is configured through Flask-Limiter with default limits of:
    - Use the comment form below the post
    - Enter your comment
    - Submit the form
+   - Comments appear instantly without page reload
+   - Real-time updates provide immediate feedback
+
+4. **Using Code Snippets**:
+   1. Type three backticks (```)
+   2. Immediately type the language name (e.g., python, javascript, css)
+   3. Press Enter to start a new line
+   4. Type or paste your code
+   5. Press Enter to start a new line after your code
+   6. Type three backticks (```) to close the code block
+
+   - **Supported Languages**: Python, JavaScript, CSS, HTML, Java, C#, PHP, and Plain Text
+
+   - **Example**:
+     ```python
+     def hello_world():
+         print("Hello, world!")
+     ```
+
+   - **Troubleshooting**:
+     - Make sure there's a newline after the language name
+     - Make sure there's a newline before the closing backticks
+     - If syntax highlighting doesn't work, check that you've spelled the language name correctly
 
 ### Messaging
 1. **Viewing Messages**:
@@ -398,6 +422,8 @@ Custom JavaScript functionality, including:
 - Form validation
 - Textarea auto-resize
 - Markdown preview
+- Real-time comment submission using AJAX
+- Dynamic UI updates without page reload
 
 ## Performance Optimizations
 
@@ -419,6 +445,11 @@ The application includes several performance optimizations:
 ### Pagination
 - Topics are paginated with configurable items per page
 - Posts are paginated with configurable items per page
+
+### Real-time Updates
+- Comments are submitted and displayed in real-time using AJAX
+- No page reload required when adding comments
+- Improved user experience with immediate feedback
 
 ## Security Features
 
@@ -499,6 +530,11 @@ For production deployment, consider the following:
   - **Solution**: Check database query performance
   - **Solution**: Ensure indexes are properly set up
   - **Solution**: Verify caching is working correctly
+
+- **Issue**: Delay when submitting comments or posts
+  - **Solution**: Ensure AJAX functionality is working correctly
+  - **Solution**: Check browser console for JavaScript errors
+  - **Solution**: Verify that the server is responding with the correct JSON format
 
 ### Getting Help
 If you encounter issues not covered here:
