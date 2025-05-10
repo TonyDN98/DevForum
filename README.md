@@ -32,6 +32,7 @@ The application follows a traditional forum structure with categories, topics, p
 - **Registration and Authentication**: Secure user registration and login system
 - **User Profiles**: Customizable profiles with bio and activity history
 - **Password Management**: Secure password hashing and reset functionality
+- **Private Messaging**: Direct messaging between users with unread message indicators
 
 ### Content Management
 - **Categories**: Organize discussions into logical categories
@@ -129,6 +130,17 @@ The application uses SQLAlchemy ORM with the following models:
 - `updated_at`: Last update timestamp
 - `user_id`: Foreign key to User (indexed)
 - `post_id`: Foreign key to Post (indexed)
+
+### Message
+- `id`: Primary key
+- `content`: Message content
+- `created_at`: Creation timestamp (indexed)
+- `is_read`: Boolean indicating if the message has been read
+- `sender_id`: Foreign key to User (indexed)
+- `recipient_id`: Foreign key to User (indexed)
+- Relationships:
+  - `sender`: Many-to-one relationship with User (sender)
+  - `recipient`: Many-to-one relationship with User (recipient)
 
 ## Installation
 
@@ -238,6 +250,24 @@ Rate limiting is configured through Flask-Limiter with default limits of:
    - Enter your comment
    - Submit the form
 
+### Messaging
+1. **Viewing Messages**:
+   - Click on your username in the navigation bar
+   - Select "Messages" from the dropdown menu
+   - View a list of all your conversations
+   - Click on a conversation to view the messages
+
+2. **Sending Messages**:
+   - Navigate to a user's profile
+   - Click "Send Message"
+   - Enter your message
+   - Click "Send Message"
+
+3. **Replying to Messages**:
+   - Navigate to a conversation
+   - Type your reply in the text box at the bottom
+   - Click "Send"
+
 ### User Profile
 1. Click on your username in the navigation bar
 2. Select "Profile" to view your profile
@@ -286,6 +316,11 @@ The application provides the following routes:
 ### Search Route
 - `GET /search`: Search topics and posts
 
+### Messaging Routes
+- `GET /messages`: View all conversations
+- `GET/POST /messages/<username>`: View and send messages in a conversation
+- `GET/POST /messages/new/<username>`: Start a new conversation
+
 ### Admin Routes
 - `GET /admin`: Admin dashboard
 - `GET/POST /admin/category/new`: Create a new category
@@ -320,6 +355,9 @@ dev-forum/
     ├── index.html         # Home page
     ├── login.html         # Login page
     ├── new_category.html  # Create category
+    ├── messages.html      # List of conversations
+    ├── conversation.html  # Single conversation view
+    ├── new_message.html   # Create new message
     ├── new_post.html      # Create post
     ├── new_topic.html     # Create topic
     ├── profile.html       # User profile

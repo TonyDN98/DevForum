@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - Dev Forum{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Messages</h1>
+        <p class="lead">Your conversations</p>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Conversations</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for conversation in conversations %}
+                <a href="{{ url_for('conversation', username=conversation.user.username) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">
+                            {{ conversation.user.username }}
+                            {% if conversation.unread_count > 0 %}
+                            <span class="badge bg-primary">{{ conversation.unread_count }}</span>
+                            {% endif %}
+                        </h5>
+                        <small>
+                            {% if conversation.last_message %}
+                            {{ conversation.last_message.created_at|time_since }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% if conversation.last_message %}
+                    <p class="mb-1">
+                        {% if conversation.last_message.sender_id == current_user.id %}
+                        <span class="text-muted">You:</span>
+                        {% else %}
+                        <span class="text-muted">{{ conversation.user.username }}:</span>
+                        {% endif %}
+                        {{ conversation.last_message.content|truncate(100) }}
+                    </p>
+                    {% else %}
+                    <p class="mb-1 text-muted">No messages yet</p>
+                    {% endif %}
+                </a>
+                {% else %}
+                <div class="list-group-item">
+                    <p class="mb-0">You don't have any conversations yet.</p>
+                    <p class="mb-0">Visit a user's profile to start a conversation.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

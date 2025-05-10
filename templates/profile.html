@@ -18,7 +18,7 @@
                 <span class="badge bg-danger">Admin</span>
                 {% endif %}
                 <p class="text-muted">Member since {{ user.join_date.strftime('%Y-%m-%d') }}</p>
-                
+
                 <div class="row text-center mt-4">
                     <div class="col-6">
                         <h4>{{ user.posts.count() }}</h4>
@@ -43,20 +43,24 @@
         </div>
         {% endif %}
 
-        {% if user == current_user %}
         <div class="card mb-4">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">Actions</h5>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    {% if user == current_user %}
                     <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">
                         <i class="bi bi-pencil-square"></i> Edit Profile
                     </a>
+                    {% else %}
+                    <a href="{{ url_for('new_message', username=user.username) }}" class="btn btn-primary">
+                        <i class="bi bi-chat-dots"></i> Send Message
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        {% endif %}
     </div>
 
     <div class="col-md-8">

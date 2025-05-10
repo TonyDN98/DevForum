@@ -95,6 +95,17 @@ class Comment(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False, index=True)
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    is_read = db.Column(db.Boolean, default=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+
+    sender = db.relationship('User', foreign_keys=[sender_id], backref=db.backref('sent_messages', lazy='dynamic'))
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref=db.backref('received_messages', lazy='dynamic'))
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -294,6 +305,102 @@ with app.app_context():
         ]
         db.session.add_all(categories)
         db.session.commit()
+# Chat routes
+@app.route('/messages')
+@login_required
+def messages():
+    # Get all users that the current user has conversations with
+    sent_to_users = db.session.query(User).join(Message, User.id == Message.recipient_id).filter(Message.sender_id == current_user.id).distinct().all()
+    received_from_users = db.session.query(User).join(Message, User.id == Message.sender_id).filter(Message.recipient_id == current_user.id).distinct().all()
+
+    # Combine the lists and remove duplicates
+    conversation_users = list(set(sent_to_users + received_from_users))
+
+    # Get the last message for each conversation
+    conversations = []
+    for user in conversation_users:
+        # Get the last message between the current user and this user
+        last_message = Message.query.filter(
+            ((Message.sender_id == current_user.id) & (Message.recipient_id == user.id)) |
+            ((Message.sender_id == user.id) & (Message.recipient_id == current_user.id))
+        ).order_by(Message.created_at.desc()).first()
+
+        # Count unread messages
+        unread_count = Message.query.filter_by(
+            sender_id=user.id, 
+            recipient_id=current_user.id, 
+            is_read=False
+        ).count()
+
+        conversations.append({
+            'user': user,
+            'last_message': last_message,
+            'unread_count': unread_count
+        })
+
+    # Sort conversations by the timestamp of the last message
+    conversations.sort(key=lambda x: x['last_message'].created_at if x['last_message'] else datetime.min, reverse=True)
+
+    return render_template('messages.html', conversations=conversations)
+
+@app.route('/messages/<username>', methods=['GET', 'POST'])
+@login_required
+def conversation(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    if request.method == 'POST':
+        content = request.form.get('content')
+        if content:
+            message = Message(
+                content=content,
+                sender_id=current_user.id,
+                recipient_id=user.id
+            )
+            db.session.add(message)
+            db.session.commit()
+            flash('Message sent.')
+            return redirect(url_for('conversation', username=username))
+
+    # Get all messages between the current user and the other user
+    messages = Message.query.filter(
+        ((Message.sender_id == current_user.id) & (Message.recipient_id == user.id)) |
+        ((Message.sender_id == user.id) & (Message.recipient_id == current_user.id))
+    ).order_by(Message.created_at).all()
+
+    # Mark unread messages as read
+    unread_messages = Message.query.filter_by(
+        sender_id=user.id, 
+        recipient_id=current_user.id, 
+        is_read=False
+    ).all()
+
+    for message in unread_messages:
+        message.is_read = True
+
+    db.session.commit()
+
+    return render_template('conversation.html', user=user, messages=messages)
+
+@app.route('/messages/new/<username>', methods=['GET', 'POST'])
+@login_required
+def new_message(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    if request.method == 'POST':
+        content = request.form.get('content')
+        if content:
+            message = Message(
+                content=content,
+                sender_id=current_user.id,
+                recipient_id=user.id
+            )
+            db.session.add(message)
+            db.session.commit()
+            flash('Message sent.')
+            return redirect(url_for('conversation', username=username))
+
+    return render_template('new_message.html', user=user)
+
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(e):
