@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.title }} - Dev Forum{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('category', category_id=topic.category_id) }}">{{ topic.category.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ topic.title }}</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>{{ topic.title }}</h1>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('new_post', topic_id=topic.id) }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Reply
+            </a>
+            {% endif %}
+        </div>
+
+        {% if topic.description %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <p class="mb-0">{{ topic.description }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Posts</h5>
+            </div>
+            <div class="card-body p-0">
+                {% for post in posts.items %}
+                <div class="post p-3 {% if not loop.last %}border-bottom{% endif %}">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0 me-3 text-center" style="width: 150px;">
+                            <div class="mb-2">
+                                <i class="bi bi-person-circle" style="font-size: 3rem;"></i>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('profile', username=post.author.username) }}">{{ post.author.username }}</a>
+                            </div>
+                            <div class="text-muted small">
+                                Joined: {{ post.author.join_date.strftime('%Y-%m-%d') }}
+                            </div>
+                            <div class="text-muted small">
+                                Posts: {{ post.author.posts.count() }}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div class="text-muted small">
+                                    Posted: {{ post.created_at|time_since }}
+                                    {% if post.updated_at != post.created_at %}
+                                    (Edited: {{ post.updated_at|time_since }})
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <span class="badge bg-secondary">#{{ (posts.page - 1) * posts.per_page + loop.index }}</span>
+                                </div>
+                            </div>
+                            <div class="post-content mb-3">
+                                {{ post.content|nl2br }}
+                            </div>
+
+                            {% if post.comments.count() > 0 %}
+                            <div class="comments mt-3">
+                                <h6>Comments:</h6>
+                                {% for comment in post.comments %}
+                                <div class="comment p-2 mb-2 bg-light rounded">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <div>
+                                            <a href="{{ url_for('profile', username=comment.author.username) }}">{{ comment.author.username }}</a>
+                                        </div>
+                                        <div class="text-muted small">
+                                            {{ comment.created_at|time_since }}
+                                        </div>
+                                    </div>
+                                    <div>{{ comment.content }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            {% if current_user.is_authenticated %}
+                            <div class="mt-3">
+                                <form action="{{ url_for('new_comment', post_id=post.id) }}" method="post">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="content" placeholder="Add a comment..." required>
+                                        <button class="btn btn-outline-primary" type="submit">Comment</button>
+                                    </div>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="p-3">
+                    <p class="mb-0">No posts found in this topic.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if posts.items %}
+            <div class="card-footer">
+                <nav aria-label="Posts pagination">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if posts.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('topic', topic_id=topic.id, page=posts.prev_num) }}">Previous</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if page_num %}
+                                {% if page_num == posts.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('topic', topic_id=topic.id, page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if posts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('topic', topic_id=topic.id, page=posts.next_num) }}">Next</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-3">
+            <a href="{{ url_for('category', category_id=topic.category_id) }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to {{ topic.category.name }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

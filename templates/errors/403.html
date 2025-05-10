@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Access Forbidden - Dev Forum{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="mt-5 mb-5">
+            <h1 class="display-1">403</h1>
+            <h2>Access Forbidden</h2>
+            <p class="lead">You don't have permission to access this page.</p>
+            <div class="mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="bi bi-house"></i> Go to Home Page
+                </a>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

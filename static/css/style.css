@@ -1,0 +1,126 @@
+/* Custom styles for Dev Forum */
+
+/* General styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Navbar customization */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Card customization */
+.card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: none;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+/* Post styling */
+.post {
+    position: relative;
+}
+
+.post:hover {
+    background-color: #f8f9fa;
+}
+
+.post-content {
+    line-height: 1.6;
+}
+
+/* Comment styling */
+.comment {
+    border-left: 3px solid #007bff;
+}
+
+/* Profile page */
+.profile-header {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Footer customization */
+footer {
+    margin-top: 50px;
+}
+
+/* Breadcrumb customization */
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+/* Button customization */
+.btn {
+    border-radius: 3px;
+}
+
+/* Form customization */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Pagination */
+.pagination {
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .post .flex-shrink-0 {
+        display: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body.dark-mode {
+        background-color: #222;
+        color: #f8f9fa;
+    }
+    
+    body.dark-mode .card {
+        background-color: #333;
+        color: #f8f9fa;
+    }
+    
+    body.dark-mode .list-group-item {
+        background-color: #333;
+        color: #f8f9fa;
+        border-color: #444;
+    }
+    
+    body.dark-mode .navbar {
+        background-color: #222 !important;
+    }
+    
+    body.dark-mode .form-control {
+        background-color: #444;
+        color: #f8f9fa;
+        border-color: #555;
+    }
+}

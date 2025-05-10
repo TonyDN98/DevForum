@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}New Topic - {{ category.name }} - Dev Forum{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('category', category_id=category.id) }}">{{ category.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">New Topic</li>
+            </ol>
+        </nav>
+
+        <h1>Create New Topic</h1>
+        <p class="lead">in {{ category.name }}</p>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Topic Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('new_topic', category_id=category.id) }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                        <div class="form-text">Choose a descriptive title for your topic.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <input type="text" class="form-control" id="description" name="description">
+                        <div class="form-text">A brief description of what this topic is about.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="10" required></textarea>
+                        <div class="form-text">The main content of your post. You can use multiple paragraphs.</div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('category', category_id=category.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Topic</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - Dev Forum{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="mt-5 mb-5">
+            <h1 class="display-1">404</h1>
+            <h2>Page Not Found</h2>
+            <p class="lead">The page you are looking for does not exist or has been moved.</p>
+            <div class="mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="bi bi-house"></i> Go to Home Page
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

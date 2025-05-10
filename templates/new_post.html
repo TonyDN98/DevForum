@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Reply to {{ topic.title }} - Dev Forum{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('category', category_id=topic.category_id) }}">{{ topic.category.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('topic', topic_id=topic.id) }}">{{ topic.title }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Reply</li>
+            </ol>
+        </nav>
+
+        <h1>Reply to Topic</h1>
+        <p class="lead">{{ topic.title }}</p>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Your Reply</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('new_post', topic_id=topic.id) }}">
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="10" required></textarea>
+                        <div class="form-text">The content of your reply. You can use multiple paragraphs.</div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('topic', topic_id=topic.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Post Reply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

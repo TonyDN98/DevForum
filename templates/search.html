@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - Dev Forum{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Search Results</h1>
+        {% if query %}
+        <p class="lead">Results for "{{ query }}"</p>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Topics</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for topic in topics %}
+                <a href="{{ url_for('topic', topic_id=topic.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ topic.title }}</h5>
+                        <small>{{ topic.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    {% if topic.description %}
+                    <p class="mb-1">{{ topic.description }}</p>
+                    {% endif %}
+                    <small>
+                        Category: <a href="{{ url_for('category', category_id=topic.category_id) }}">{{ topic.category.name }}</a> | 
+                        Posts: {{ topic.posts.count() }}
+                    </small>
+                </a>
+                {% else %}
+                <div class="list-group-item">
+                    <p class="mb-0">No topics found matching "{{ query }}".</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Posts</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for post in posts %}
+                <a href="{{ url_for('topic', topic_id=post.topic_id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ post.topic.title }}</h5>
+                        <small>{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <p class="mb-1">{{ post.content|truncate(200) }}</p>
+                    <small>
+                        Posted by: <a href="{{ url_for('profile', username=post.author.username) }}">{{ post.author.username }}</a> | 
+                        Category: <a href="{{ url_for('category', category_id=post.topic.category_id) }}">{{ post.topic.category.name }}</a>
+                    </small>
+                </a>
+                {% else %}
+                <div class="list-group-item">
+                    <p class="mb-0">No posts found matching "{{ query }}".</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if not topics and not posts %}
+        <div class="alert alert-info mt-4">
+            <p class="mb-0">No results found for "{{ query }}". Try a different search term.</p>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+                <p class="mb-0">Enter a search term in the search box above to find topics and posts.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
