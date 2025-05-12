@@ -22,9 +22,601 @@ A comprehensive community forum for developers to discuss and share knowledge ab
 
 ## Overview
 
-Dev Forum is a Flask-based web application designed to facilitate discussions among developers. It provides a structured platform where users can create topics within predefined categories, post replies, and engage in conversations about various programming and technology topics.
+Dev Forum is a comprehensive web-based discussion platform specifically engineered to facilitate knowledge exchange and collaboration among software developers and technology professionals. This application implements a structured communication environment where technical discourse can flourish through organized categories, topics, and threaded conversations.
 
-The application follows a traditional forum structure with categories, topics, posts, and comments. It includes user authentication, profile management, and administrative capabilities for forum moderation.
+### Application Architecture
+
+The system employs a modern three-tier architecture:
+
+1. **Presentation Layer**: A responsive, user-friendly interface built with contemporary web technologies
+2. **Application Layer**: A robust backend system handling business logic and request processing
+3. **Data Layer**: A persistent storage system maintaining relational data with optimized access patterns
+
+### Backend Technologies
+
+The server-side implementation leverages several sophisticated technologies, each with its own history, purpose, and specific implementation within this application:
+
+#### Flask Framework (v2.3.3)
+
+**History**: Flask was created by Armin Ronacher in 2010 as an April Fool's joke that evolved into a serious project. It was designed as a "microframework" with a small core but extensible through various add-ons.
+
+**Purpose**: Flask provides the foundation for routing HTTP requests, handling form submissions, managing sessions, and generating responses. Its lightweight nature allows developers to choose components that fit their specific needs rather than imposing a rigid structure.
+
+**Usage in Dev Forum**: The application uses Flask as its core framework, handling all HTTP requests and coordinating the various components of the application.
+
+**Code Example**:
+```python
+from flask import Flask, render_template, request, redirect, url_for
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    categories = Category.query.all()
+    return render_template('index.html', categories=categories)
+
+@app.route('/topic/<int:topic_id>')
+def topic(topic_id):
+    topic = Topic.query.get_or_404(topic_id)
+    return render_template('topic.html', topic=topic)
+```
+
+#### SQLAlchemy ORM (v2.0.21)
+
+**History**: SQLAlchemy was created by Michael Bayer in 2006 and has become one of the most popular ORMs in the Python ecosystem. Version 2.0, released in 2023, introduced significant improvements to the API and performance.
+
+**Purpose**: SQLAlchemy provides an abstraction layer for database operations, allowing developers to work with Python objects instead of writing raw SQL. It supports multiple database backends and provides powerful query capabilities.
+
+**Usage in Dev Forum**: The application uses SQLAlchemy to define database models, establish relationships between them, and perform database operations.
+
+**Code Example**:
+```python
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+```
+
+#### Flask Extensions
+
+##### Flask-Login (v0.6.2)
+
+**History**: Flask-Login was developed to provide user authentication functionality for Flask applications. It has been a core part of the Flask ecosystem since the early days.
+
+**Purpose**: Flask-Login manages user authentication, session handling, and access control, making it easy to implement login/logout functionality and protect routes.
+
+**Usage in Dev Forum**: The application uses Flask-Login to handle user authentication, protect routes that require login, and provide access to the current user in templates.
+
+**Code Example**:
+```python
+from flask_login import LoginManager, login_user, login_required, current_user
+
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/login', methods=['POST'])
+def login():
+    user = User.query.filter_by(username=request.form['username']).first()
+    if user and user.check_password(request.form['password']):
+        login_user(user)
+        return redirect(url_for('index'))
+```
+
+##### Flask-Caching (v2.1.0)
+
+**History**: Flask-Caching evolved from Flask-Cache to provide a more modern and flexible caching solution for Flask applications.
+
+**Purpose**: Flask-Caching implements strategic content caching to optimize performance by storing the results of expensive operations and serving them directly on subsequent requests.
+
+**Usage in Dev Forum**: The application uses Flask-Caching to cache frequently accessed pages like category and topic listings, reducing database load and improving response times.
+
+**Code Example**:
+```python
+from flask_caching import Cache
+
+cache = Cache(app)
+
+@app.route('/category/<int:category_id>')
+@cache.cached(timeout=60, query_string=True)
+def category(category_id):
+    category = Category.query.get_or_404(category_id)
+    topics = Topic.query.filter_by(category_id=category_id).order_by(Topic.created_at.desc())
+    return render_template('category.html', category=category, topics=topics)
+```
+
+##### Flask-SQLAlchemy (v3.1.1)
+
+**History**: Flask-SQLAlchemy was created to integrate SQLAlchemy with Flask, providing a simpler API and automatic configuration.
+
+**Purpose**: Flask-SQLAlchemy integrates SQLAlchemy with Flask, providing a simpler API, automatic configuration, and integration with Flask's application context.
+
+**Usage in Dev Forum**: The application uses Flask-SQLAlchemy to define models, establish database connections, and perform database operations within the Flask application context.
+
+**Code Example**:
+```python
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///forum.db'
+db = SQLAlchemy(app)
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+```
+
+#### Jinja2 Template Engine (v3.1.2)
+
+**History**: Jinja2 was created by Armin Ronacher (the same creator as Flask) and is inspired by Django's template engine. It has been the default template engine for Flask since its inception.
+
+**Purpose**: Jinja2 renders dynamic HTML content with powerful features like template inheritance, macros, filters, and conditional rendering.
+
+**Usage in Dev Forum**: The application uses Jinja2 to render all HTML pages, passing data from the backend to be displayed in the frontend.
+
+**Code Example**:
+```html
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ topic.title }}</h1>
+<div class="posts">
+    {% for post in posts %}
+    <div class="post">
+        <div class="post-header">
+            <a href="{{ url_for('profile', username=post.author.username) }}">
+                {{ post.author.username }}
+            </a>
+            <span class="text-muted">{{ post.created_at|time_since }}</span>
+        </div>
+        <div class="post-content">
+            {{ post.content|format_content }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+```
+
+#### SQLite Database
+
+**History**: SQLite was created by D. Richard Hipp in 2000 as a self-contained, serverless, zero-configuration database engine. It has become one of the most widely deployed databases in the world.
+
+**Purpose**: SQLite provides reliable data persistence with ACID compliance in a file-based format, making it ideal for smaller applications or development environments.
+
+**Usage in Dev Forum**: The application uses SQLite as its database backend, storing all data in a single file (forum.db) in the instance directory.
+
+**Code Example**:
+```python
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///forum.db'
+
+# Initialize the database
+with app.app_context():
+    db.create_all()
+```
+
+#### Werkzeug (v2.3.7)
+
+**History**: Werkzeug was created by Armin Ronacher as a collection of utilities for WSGI applications. It forms the foundation of Flask and many other Python web frameworks.
+
+**Purpose**: Werkzeug supplies WSGI utilities, security features, and request/response objects, providing the low-level functionality needed by web frameworks.
+
+**Usage in Dev Forum**: The application uses Werkzeug for password hashing, URL routing, and handling HTTP requests and responses.
+
+**Code Example**:
+```python
+from werkzeug.security import generate_password_hash, check_password_hash
+
+class User(db.Model):
+    # ...
+    password_hash = db.Column(db.String(128))
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+```
+
+#### Additional Backend Components
+
+##### Python-dotenv (v1.0.0)
+
+**History**: Python-dotenv was created to simplify the management of environment variables in Python applications, inspired by similar tools in other ecosystems like Node.js.
+
+**Purpose**: Python-dotenv loads environment variables from a .env file, making it easy to configure applications without hardcoding sensitive information.
+
+**Usage in Dev Forum**: The application can use Python-dotenv to load configuration variables from a .env file, keeping sensitive information like the secret key out of the codebase.
+
+**Code Example**:
+```python
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load variables from .env file
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
+```
+
+##### Email-validator (v2.0.0)
+
+**History**: Email-validator was created to provide robust email validation for Python applications, addressing the limitations of simple regex-based approaches.
+
+**Purpose**: Email-validator provides comprehensive email validation, checking both syntax and domain validity.
+
+**Usage in Dev Forum**: The application can use Email-validator to ensure that email addresses provided during registration are valid.
+
+**Code Example**:
+```python
+from email_validator import validate_email, EmailNotValidError
+
+def validate_user_email(email):
+    try:
+        valid = validate_email(email)
+        return valid.email
+    except EmailNotValidError as e:
+        raise ValueError(str(e))
+```
+
+### Frontend Technologies
+
+The client-side implementation utilizes modern web standards and libraries, each with its own history, purpose, and specific implementation within this application:
+
+#### HTML5
+
+**History**: HTML5 was finalized and published as a W3C Recommendation in October 2014, representing a major evolution of the HTML standard. It introduced many new syntactic features, including semantic elements, form controls, and multimedia support.
+
+**Purpose**: HTML5 provides the semantic structure and content organization for web pages, making them more accessible, maintainable, and SEO-friendly.
+
+**Usage in Dev Forum**: The application uses HTML5 for all page templates, leveraging semantic elements like `<header>`, `<nav>`, `<main>`, `<section>`, and `<footer>` to create a well-structured document.
+
+**Code Example**:
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dev Forum{% endblock %}</title>
+    <!-- CSS and JavaScript includes -->
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <!-- Navigation content -->
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="bg-dark text-white mt-5 py-4">
+        <!-- Footer content -->
+    </footer>
+
+    <!-- JavaScript includes -->
+</body>
+</html>
+```
+
+#### CSS3
+
+**History**: CSS3 is the latest evolution of the Cascading Style Sheets language, developed by the W3C starting in the late 1990s. Unlike its predecessors, CSS3 is modular, allowing different aspects to be developed and implemented independently.
+
+**Purpose**: CSS3 implements responsive layouts and visual styling, controlling the presentation of HTML elements across different devices and screen sizes.
+
+**Usage in Dev Forum**: The application uses CSS3 for all styling, including custom components, responsive design, animations, and dark mode support.
+
+**Code Example**:
+```css
+/* Custom styles for Dev Forum */
+
+/* General styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Card customization */
+.card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: none;
+    margin-bottom: 20px;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body.dark-mode {
+        background-color: #222;
+        color: #f8f9fa;
+    }
+
+    body.dark-mode .card {
+        background-color: #333;
+        color: #f8f9fa;
+    }
+}
+```
+
+#### Bootstrap 5
+
+**History**: Bootstrap was originally created by Mark Otto and Jacob Thornton at Twitter in 2011. Bootstrap 5, released in 2021, represents a major evolution of the framework, dropping jQuery dependency and focusing on vanilla JavaScript.
+
+**Purpose**: Bootstrap offers a comprehensive component library and grid system for responsive design, providing pre-styled components and utilities that speed up development.
+
+**Usage in Dev Forum**: The application uses Bootstrap 5 for its responsive grid system, navigation, cards, forms, buttons, and other UI components.
+
+**Code Example**:
+```html
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">{{ topic.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ topic.description }}</p>
+                    <a href="{{ url_for('topic', topic_id=topic.id) }}" class="btn btn-primary">View Topic</a>
+                </div>
+                <div class="card-footer text-muted">
+                    Created {{ topic.created_at|time_since }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active">Recent Topics</a>
+                {% for topic in recent_topics() %}
+                <a href="{{ url_for('topic', topic_id=topic.id) }}" class="list-group-item list-group-item-action">
+                    {{ topic.title }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+#### JavaScript (ES6+)
+
+**History**: ECMAScript 6 (ES6), also known as ECMAScript 2015, was a significant update to JavaScript released in 2015. It introduced many new features like arrow functions, classes, template literals, and promises, making JavaScript more powerful and expressive.
+
+**Purpose**: JavaScript enables dynamic client-side functionality and asynchronous operations, allowing for interactive user interfaces and real-time updates without page reloads.
+
+**Usage in Dev Forum**: The application uses modern JavaScript (ES6+) for all client-side functionality, including form handling, AJAX requests, UI interactions, and dark mode toggle.
+
+**Code Example**:
+```javascript
+// Dark mode toggle
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+if (darkModeToggle) {
+    darkModeToggle.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDarkMode);
+
+        // Update icon
+        const icon = darkModeToggle.querySelector('i');
+        if (isDarkMode) {
+            icon.classList.remove('bi-moon');
+            icon.classList.add('bi-sun');
+        } else {
+            icon.classList.remove('bi-sun');
+            icon.classList.add('bi-moon');
+        }
+    });
+
+    // Check for saved dark mode preference
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode === 'true') {
+        document.body.classList.add('dark-mode');
+        const icon = darkModeToggle.querySelector('i');
+        icon.classList.remove('bi-moon');
+        icon.classList.add('bi-sun');
+    }
+}
+```
+
+#### Fetch API
+
+**History**: The Fetch API was introduced as part of the HTML5 standard to provide a more powerful and flexible replacement for XMLHttpRequest. It became widely supported in browsers around 2015-2016.
+
+**Purpose**: The Fetch API facilitates AJAX requests for real-time content updates, allowing web applications to send and receive data from a server without refreshing the page.
+
+**Usage in Dev Forum**: The application uses the Fetch API for real-time comment submission and other asynchronous operations, improving the user experience by avoiding page reloads.
+
+**Code Example**:
+```javascript
+// Handle comment form submissions with AJAX
+const commentForms = document.querySelectorAll('form[action^="/comment/new/"]');
+commentForms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        // Show loading spinner
+        submitButton.innerHTML = '<div class="loading-spinner"></div> Posting...';
+        submitButton.disabled = true;
+
+        // Send AJAX request
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Create and add new comment to the page
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment p-2 mb-2 bg-light rounded';
+            commentDiv.innerHTML = `
+                <div class="d-flex justify-content-between mb-1">
+                    <div>
+                        <a href="${data.author.profile_url}">${data.author.username}</a>
+                    </div>
+                    <div class="text-muted small">
+                        ${data.time_since}
+                    </div>
+                </div>
+                <div>${data.formatted_content}</div>
+            `;
+
+            // Add to page and restore button state
+            commentsContainer.appendChild(commentDiv);
+            form.reset();
+            submitButton.innerHTML = 'Comment';
+            submitButton.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting your comment.');
+            submitButton.innerHTML = 'Comment';
+            submitButton.disabled = false;
+        });
+    });
+});
+```
+
+#### Prism.js
+
+**History**: Prism.js was created by Lea Verou in 2012 as a lightweight, extensible syntax highlighter. It has become one of the most popular syntax highlighting libraries due to its performance and flexibility.
+
+**Purpose**: Prism.js delivers syntax highlighting for code snippets across multiple programming languages, making code more readable and visually appealing.
+
+**Usage in Dev Forum**: The application uses Prism.js to highlight code snippets in posts and comments, supporting multiple programming languages like Python, JavaScript, CSS, HTML, Java, C#, and PHP.
+
+**Code Example**:
+```html
+<!-- Include Prism.js in the head section -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css">
+
+<!-- Include Prism.js scripts at the end of the body -->
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+<!-- Initialize Prism.js line numbers -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Prism.plugins.lineNumbers.init();
+    });
+</script>
+```
+
+#### Bootstrap Icons
+
+**History**: Bootstrap Icons is an open-source SVG icon library created by the Bootstrap team. It was first released in 2020 as a companion to Bootstrap 5.
+
+**Purpose**: Bootstrap Icons provides a comprehensive set of free, high-quality SVG icons that can be used in web projects.
+
+**Usage in Dev Forum**: The application uses Bootstrap Icons for various UI elements, including navigation, buttons, and status indicators.
+
+**Code Example**:
+```html
+<!-- Include Bootstrap Icons in the head section -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+
+<!-- Use Bootstrap Icons in the HTML -->
+<a class="nav-link position-relative" href="{{ url_for('messages') }}">
+    <i class="bi bi-envelope"></i>
+    {% if unread_messages_count() > 0 %}
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-notification">
+        {{ unread_messages_count() }}
+        <span class="visually-hidden">unread messages</span>
+    </span>
+    {% endif %}
+</a>
+
+<!-- Use Bootstrap Icons in JavaScript -->
+<script>
+    const icon = darkModeToggle.querySelector('i');
+    if (isDarkMode) {
+        icon.classList.remove('bi-moon');
+        icon.classList.add('bi-sun');
+    } else {
+        icon.classList.remove('bi-sun');
+        icon.classList.add('bi-moon');
+    }
+</script>
+```
+
+#### Custom Components
+
+**History**: Custom components are a modern approach to web development, influenced by component-based frameworks like React and Vue.js. They represent a shift towards modular, reusable UI elements.
+
+**Purpose**: Custom components include loading indicators, notifications, and interactive UI elements that enhance the user experience and provide visual feedback.
+
+**Usage in Dev Forum**: The application implements several custom components, including loading spinners, notification badges, and interactive forms.
+
+**Code Example**:
+```css
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    border: 0.2em solid rgba(0, 123, 255, 0.2);
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spinner 1s linear infinite;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+```
+
+```javascript
+// Create and show loading spinner
+submitButton.innerHTML = '<div class="loading-spinner"></div> Posting...';
+submitButton.disabled = true;
+
+// Restore button state after operation completes
+submitButton.innerHTML = originalButtonText;
+submitButton.disabled = false;
+```
+
+### Customization Capabilities
+
+The application architecture supports extensive customization across multiple dimensions:
+
+- **Visual Theming**: Modify color schemes, typography, and component styling through CSS variables
+- **Layout Configuration**: Adjust page structures, component positioning, and responsive breakpoints
+- **Feature Enablement**: Toggle functionality such as code highlighting, real-time updates, and dark mode
+- **Content Organization**: Customize category structures, topic templates, and content formatting options
+- **Performance Tuning**: Configure caching strategies, pagination limits, and database indexing
+- **Security Parameters**: Adjust authentication requirements, password policies, and access controls
+
+This modular design facilitates adaptation to various community needs while maintaining a consistent user experience and robust technical foundation.
 
 ## Features
 
@@ -54,7 +646,6 @@ The application follows a traditional forum structure with categories, topics, p
 
 ### Performance and Security
 - **Caching**: Improved performance through strategic content caching
-- **Rate Limiting**: Protection against abuse and brute force attacks
 - **CSRF Protection**: Security against cross-site request forgery
 - **Database Indexing**: Optimized database queries for faster performance
 
@@ -72,7 +663,6 @@ The application follows the Model-View-Controller (MVC) pattern:
 - **SQLAlchemy**: ORM for database interactions
 - **Flask-Login**: Handles user authentication and session management
 - **Flask-Caching**: Implements caching for improved performance
-- **Flask-Limiter**: Provides rate limiting functionality
 - **Jinja2**: Template engine for rendering HTML
 
 ### Request Flow
@@ -213,140 +803,51 @@ The application can be configured through the following settings in `app.py`:
 - `POSTS_PER_PAGE`: Number of posts to display per page (default: 10)
 - `TOPICS_PER_PAGE`: Number of topics to display per page (default: 20)
 
-### Rate Limiting
-Rate limiting is configured through Flask-Limiter with default limits of:
-- 200 requests per day
-- 50 requests per hour
+## Usage Guide
 
-## User Documentation
-
-### Getting Started
-
-#### What is Dev Forum?
-Dev Forum is a community platform where developers can discuss programming topics, share knowledge, ask questions, and connect with other developers. The forum is organized into categories, topics, and posts, making it easy to find and participate in discussions that interest you.
-
-#### System Requirements
-- A modern web browser (Chrome, Firefox, Safari, Edge)
-- Internet connection
-- JavaScript enabled
-- Cookies enabled (for session management)
-
-#### First-Time User Guide
-1. **Visit the Homepage**: Navigate to the Dev Forum website to see available discussion categories
-2. **Create an Account**: Click "Register" in the navigation bar to create a new account
-3. **Explore Categories**: Browse through the categories to find topics that interest you
-4. **Join Discussions**: Read existing topics or create new ones to participate in the community
-
-### Account Management
-
-#### Registration
+### User Registration and Login
 1. Click "Register" in the navigation bar
-2. Fill in the required fields:
-   - Username (must be unique)
-   - Email address (must be unique)
-   - Password (choose a secure password)
-3. Click "Register" to create your account
-4. You'll be redirected to the login page with a success message
+2. Fill in the registration form with username, email, and password
+3. Submit the form to create your account
+4. Log in using your credentials
 
-#### Login
-1. Click "Login" in the navigation bar
-2. Enter your username and password
-3. Click "Login" to access your account
-4. If successful, you'll be redirected to the homepage
+### Browsing the Forum
+1. The home page displays all categories
+2. Click on a category to view topics within that category
+3. Click on a topic to view posts and discussions
+4. Use pagination controls to navigate through multiple pages
 
-#### Password Management
-1. **Changing Your Password**:
-   - Click on your username in the navigation bar
-   - Select "Profile" from the dropdown menu
-   - Click "Edit Profile"
-   - Scroll to the password section
-   - Enter your current password
-   - Enter and confirm your new password
-   - Click "Update Profile" to save changes
-
-#### Profile Management
-1. **Viewing Your Profile**:
-   - Click on your username in the navigation bar
-   - Select "Profile" from the dropdown menu
-   - View your profile information, including join date and post history
-
-2. **Updating Your Profile**:
-   - Click "Edit Profile" on your profile page
-   - Update your bio with information about yourself
-   - Click "Update Profile" to save changes
-
-3. **Viewing Other Users' Profiles**:
-   - Click on a username anywhere in the forum
-   - View their profile information and post history
-
-### Navigation Guide
-
-#### Main Navigation
-- **Home**: Click the "Dev Forum" logo or "Home" link to return to the homepage
-- **Search**: Use the search box in the navigation bar to find topics and posts
-- **Messages**: Click the envelope icon to access your private messages
-- **User Menu**: Click your username to access profile, messages, and logout options
-- **Admin**: Admin users will see an "Admin" link for accessing administrative functions
-
-#### Breadcrumb Navigation
-- Breadcrumbs appear at the top of category and topic pages
-- They show your current location in the forum hierarchy
-- Click any breadcrumb link to navigate to that level
-
-#### Pagination
-- When viewing lists of topics or posts, pagination controls appear at the bottom
-- Use "Previous" and "Next" links to navigate between pages
-- Click specific page numbers to jump to that page
-
-### Using the Forum
-
-#### Browsing Content
-1. **Viewing Categories**:
-   - The homepage displays all available categories
-   - Each category shows its name, description, and topic count
-
-2. **Viewing Topics in a Category**:
-   - Click on a category name to view all topics in that category
-   - Topics are sorted by most recent activity
-   - Each topic shows its title, description, and post count
-
-3. **Viewing Posts in a Topic**:
-   - Click on a topic title to view all posts in that topic
-   - Posts are displayed chronologically
-   - Each post shows the author, content, and timestamp
-
-#### Creating Content
+### Creating Content
 1. **Creating a Topic**:
    - Navigate to the desired category
    - Click "New Topic"
-   - Fill in the required fields:
-     - Title: A clear, descriptive title for your topic
-     - Description (optional): A brief summary of the topic
-     - Content: The main body of your first post
-   - Click "Create Topic" to submit
+   - Fill in the title, optional description, and content
+   - Submit the form
+   - A loading indicator will appear while the topic is being created
 
 2. **Replying to a Topic**:
    - Navigate to the topic
-   - Click "Reply" at the top of the page or scroll to the bottom
-   - Enter your content in the text area
-   - Click "Post Reply" to submit
+   - Click "Reply"
+   - Enter your content
+   - Submit the form
+   - A loading indicator will appear while the reply is being processed
 
-3. **Adding Comments to Posts**:
-   - Navigate to a post within a topic
-   - Find the comment form below the post
-   - Enter your comment in the text area
-   - Click "Comment" to submit
-   - Comments appear instantly without page reload
+3. **Adding Comments**:
+   - Navigate to a post
+   - Use the comment form below the post
+   - Enter your comment
+   - Submit the form
+   - A loading indicator will appear while the comment is being processed
+   - Comments appear instantly without page reload once processed
+   - Real-time updates provide immediate feedback
 
 4. **Using Code Snippets**:
-   - When creating topics, replies, or comments, you can include formatted code snippets
-   - To add a code snippet:
-     1. Type three backticks (```)
-     2. Immediately type the language name (e.g., python, javascript, css)
-     3. Press Enter to start a new line
-     4. Type or paste your code
-     5. Press Enter to start a new line after your code
-     6. Type three backticks (```) to close the code block
+   1. Type three backticks (```)
+   2. Immediately type the language name (e.g., python, javascript, css)
+   3. Press Enter to start a new line
+   4. Type or paste your code
+   5. Press Enter to start a new line after your code
+   6. Type three backticks (```) to close the code block
 
    - **Supported Languages**: Python, JavaScript, CSS, HTML, Java, C#, PHP, and Plain Text
 
@@ -356,136 +857,46 @@ Dev Forum is a community platform where developers can discuss programming topic
          print("Hello, world!")
      ```
 
-#### Private Messaging
-1. **Viewing Your Messages**:
-   - Click the envelope icon in the navigation bar or
-   - Click your username and select "Messages" from the dropdown menu
-   - View a list of all your conversations
-   - Unread messages are highlighted and show a count indicator
+   - **Troubleshooting**:
+     - Make sure there's a newline after the language name
+     - Make sure there's a newline before the closing backticks
+     - If syntax highlighting doesn't work, check that you've spelled the language name correctly
 
-2. **Starting a New Conversation**:
-   - Navigate to a user's profile by clicking their username
+### Messaging
+1. **Viewing Messages**:
+   - Click on your username in the navigation bar
+   - Select "Messages" from the dropdown menu
+   - View a list of all your conversations
+   - Click on a conversation to view the messages
+
+2. **Sending Messages**:
+   - Navigate to a user's profile
    - Click "Send Message"
-   - Enter your message in the text area
-   - Click "Send Message" to start the conversation
+   - Enter your message
+   - Click "Send Message"
 
 3. **Replying to Messages**:
-   - Click on a conversation in your messages list
+   - Navigate to a conversation
    - Type your reply in the text box at the bottom
-   - Click "Send" to submit your reply
+   - Click "Send"
 
-#### Searching
-1. **Basic Search**:
-   - Enter keywords in the search box in the navigation bar
-   - Click the search button or press Enter
-   - View results showing matching topics and posts
+### User Profile
+1. Click on your username in the navigation bar
+2. Select "Profile" to view your profile
+3. Click "Edit Profile" to update your bio or change your password
 
-2. **Search Tips**:
-   - Use specific keywords for better results
-   - Search for exact phrases by using quotation marks (e.g., "flask tutorial")
-   - Include code-specific terms when searching for programming topics
-
-### Admin Features
-
-#### Accessing Admin Functions
-1. Log in with an admin account
+### Admin Functions
+1. Log in as an admin user
 2. Click "Admin" in the navigation bar
-3. View the admin dashboard
+3. From the admin dashboard, you can:
+   - View forum statistics
+   - Manage users
+   - Create new categories
 
-#### Managing Categories
-1. **Creating Categories**:
-   - From the admin dashboard, click "New Category"
-   - Enter a name and description for the category
-   - Click "Create Category" to add it to the forum
-
-2. **Viewing Category Statistics**:
-   - The admin dashboard shows statistics for all categories
-   - View topic counts and activity levels
-
-#### Managing Users
-1. **Viewing User Information**:
-   - The admin dashboard displays a list of all registered users
-   - View usernames, email addresses, and join dates
-
-### Troubleshooting
-
-#### Common Issues and Solutions
-
-1. **Can't Log In**:
-   - Verify that you're using the correct username and password
-   - Check if Caps Lock is enabled
-   - Try resetting your password if you've forgotten it
-   - Clear your browser cookies and try again
-
-2. **Code Formatting Issues**:
-   - Make sure there's a newline after the language name
-   - Make sure there's a newline before the closing backticks
-   - Verify that you've spelled the language name correctly
-   - Check that you're using three backticks (```) at the beginning and end
-
-3. **Post Not Appearing**:
-   - Refresh the page to ensure you're seeing the latest content
-   - Check if your post violates any forum guidelines
-   - Verify that you completed the submission process
-
-4. **Search Not Finding Expected Results**:
-   - Try using different keywords
-   - Check for typos in your search terms
-   - Use more specific search terms
-   - Try searching for partial words if full words don't yield results
-
-### Frequently Asked Questions
-
-#### General Questions
-
-1. **Is registration required to view content?**
-   - No, you can browse categories and read topics without registering
-   - Registration is required to create topics, post replies, or send messages
-
-2. **How do I change my username?**
-   - Usernames cannot be changed after registration
-   - Contact an administrator if you need to change your username
-
-3. **Can I delete my account?**
-   - Contact an administrator to request account deletion
-
-4. **How do I report inappropriate content?**
-   - Contact an administrator with details about the content
-
-#### Content Questions
-
-1. **What types of content are allowed?**
-   - Technical discussions related to programming and development
-   - Questions about coding problems
-   - Sharing of knowledge and resources
-   - Professional networking
-
-2. **Are there any content restrictions?**
-   - No offensive or inappropriate content
-   - No spam or excessive self-promotion
-   - No posting of private or confidential information
-   - No plagiarism or copyright violations
-
-3. **Can I edit or delete my posts?**
-   - Currently, editing and deleting posts is not supported
-   - Contact an administrator if you need a post edited or removed
-
-#### Technical Questions
-
-1. **What technologies does Dev Forum use?**
-   - Flask (Python web framework)
-   - SQLAlchemy (ORM for database interactions)
-   - Bootstrap (Frontend framework)
-   - Prism.js (Code syntax highlighting)
-
-2. **Is my data secure?**
-   - Passwords are securely hashed
-   - The application uses CSRF protection
-   - Rate limiting is implemented to prevent abuse
-
-3. **Does Dev Forum work on mobile devices?**
-   - Yes, the forum is responsive and works on mobile devices
-   - All features are accessible on smaller screens
+### Search
+1. Use the search box in the navigation bar
+2. Enter keywords to search for
+3. View results showing matching topics and posts
 
 ## API Documentation
 
@@ -530,271 +941,6 @@ The application provides the following routes:
 - `404`: Page not found
 - `500`: Internal server error
 - `403`: Forbidden access
-
-## Code Documentation
-
-### Application Overview
-
-Dev Forum is a comprehensive community forum for developers to discuss and share knowledge about various programming topics. This Flask application provides a structured platform for technical discussions, knowledge sharing, and community building among developers. It includes features such as user authentication, forum categories, topics, posts, comments, and private messaging.
-
-### Database Models
-
-#### User Model
-
-```python
-class User(db.Model, UserMixin):
-    """
-    User model representing forum members.
-
-    This class stores user information including authentication details,
-    profile data, and relationships to user-generated content.
-
-    Attributes:
-        id: The primary key for the user.
-        username: The user's display name (unique).
-        email: The user's email address (unique).
-        password_hash: Securely hashed password.
-        bio: Optional user biography or description.
-        join_date: When the user registered.
-        is_admin: Whether the user has administrator privileges.
-        posts: Relationship to posts created by this user.
-        comments: Relationship to comments created by this user.
-    """
-```
-
-#### Category Model
-
-```python
-class Category(db.Model):
-    """
-    Category model representing forum sections.
-
-    Categories are the top-level organizational structure of the forum,
-    containing topics that group related discussions.
-
-    Attributes:
-        id: The primary key for the category.
-        name: The display name of the category.
-        description: Optional description of the category's purpose.
-        topics: Relationship to topics within this category.
-    """
-```
-
-#### Topic Model
-
-```python
-class Topic(db.Model):
-    """
-    Topic model representing discussion threads.
-
-    Topics are individual discussion threads within categories, containing
-    posts from users discussing a specific subject.
-
-    Attributes:
-        id: The primary key for the topic.
-        title: The title of the discussion topic.
-        description: Optional description providing more context.
-        created_at: When the topic was created.
-        category_id: Foreign key to the category containing this topic.
-        posts: Relationship to posts within this topic.
-    """
-```
-
-#### Post Model
-
-```python
-class Post(db.Model):
-    """
-    Post model representing individual messages in a topic.
-
-    Posts are the primary content of the forum, containing user messages
-    within topics. Each post can have multiple comments.
-
-    Attributes:
-        id: The primary key for the post.
-        content: The text content of the post.
-        created_at: When the post was created.
-        updated_at: When the post was last edited.
-        user_id: Foreign key to the user who created the post.
-        topic_id: Foreign key to the topic containing this post.
-        comments: Relationship to comments on this post.
-    """
-```
-
-#### Comment Model
-
-```python
-class Comment(db.Model):
-    """
-    Comment model representing responses to posts.
-
-    Comments allow users to respond directly to specific posts,
-    creating threaded discussions within topics.
-
-    Attributes:
-        id: The primary key for the comment.
-        content: The text content of the comment.
-        created_at: When the comment was created.
-        updated_at: When the comment was last edited.
-        user_id: Foreign key to the user who created the comment.
-        post_id: Foreign key to the post this comment responds to.
-    """
-```
-
-#### Message Model
-
-```python
-class Message(db.Model):
-    """
-    Message model representing private communications between users.
-
-    Messages enable direct, private communication between forum users
-    outside of the public discussion threads.
-
-    Attributes:
-        id: The primary key for the message.
-        content: The text content of the message.
-        created_at: When the message was sent.
-        is_read: Whether the recipient has read the message.
-        sender_id: Foreign key to the user who sent the message.
-        recipient_id: Foreign key to the user receiving the message.
-        sender: Relationship to the sending user.
-        recipient: Relationship to the receiving user.
-    """
-```
-
-### Template Filters
-
-#### nl2br Filter
-
-```python
-@app.template_filter('nl2br')
-def nl2br(value):
-    """
-    Convert newlines to HTML line breaks.
-
-    This filter is used in templates to convert newline characters in text
-    to HTML <br> tags, making text display properly formatted in HTML.
-
-    Args:
-        value: The string to process.
-
-    Returns:
-        Markup: A safe HTML string with newlines converted to <br> tags.
-    """
-```
-
-#### format_content Filter
-
-```python
-@app.template_filter('format_content')
-def format_content(value):
-    """
-    Format content with code highlighting and line breaks.
-
-    This filter processes text content to:
-    1. Convert code blocks wrapped in triple backticks to HTML with syntax highlighting
-    2. Apply line breaks to regular text (outside code blocks)
-
-    Args:
-        value: The string content to format.
-
-    Returns:
-        Markup: A safe HTML string with formatted content.
-    """
-```
-
-#### time_since Filter
-
-```python
-@app.template_filter('time_since')
-def time_since(dt):
-    """
-    Format a datetime into a relative time string.
-
-    This filter converts a datetime object into a human-readable string
-    representing the time elapsed since that datetime (e.g., "5 minutes ago",
-    "3 days ago", "1 year ago").
-
-    Args:
-        dt: The datetime object to format.
-
-    Returns:
-        str: A human-readable string representing the elapsed time.
-    """
-```
-
-### Route Functions
-
-#### Index Route
-
-```python
-@app.route('/')
-def index():
-    """
-    Render the homepage of the forum.
-
-    This route displays all categories, along with forum statistics
-    such as the total number of topics and users.
-
-    Returns:
-        Response: Rendered index.html template with categories and statistics.
-    """
-```
-
-#### Register Route
-
-```python
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    """
-    Handle user registration.
-
-    GET: Display the registration form.
-    POST: Process the registration form, create a new user if validation passes.
-
-    If the user is already authenticated, they are redirected to the homepage.
-
-    Returns:
-        Response: Rendered register.html template or redirect to login page
-                 after successful registration.
-    """
-```
-
-#### Login Route
-
-```python
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """
-    Handle user login.
-
-    GET: Display the login form.
-    POST: Process the login form, authenticate the user if credentials are valid.
-
-    If the user is already authenticated, they are redirected to the homepage.
-
-    Returns:
-        Response: Rendered login.html template or redirect to next page
-                 after successful login.
-    """
-```
-
-#### Utility Processor
-
-```python
-@app.context_processor
-def utility_processor():
-    """
-    Provide utility functions to all templates.
-
-    This context processor makes various helper functions available in all templates,
-    allowing them to access common data like recent topics, post counts, etc.
-
-    Returns:
-        dict: A dictionary of functions that can be called from templates.
-    """
-```
 
 ## Project Structure
 
@@ -891,6 +1037,10 @@ The application includes several performance optimizations:
 ### Real-time Updates
 - Comments are submitted and displayed in real-time using AJAX
 - No page reload required when adding comments
+- Loading indicators provide visual feedback during form submissions:
+  - When creating new topics
+  - When replying to topics
+  - When adding comments
 - Improved user experience with immediate feedback
 
 ## Security Features
@@ -898,10 +1048,6 @@ The application includes several performance optimizations:
 ### Password Security
 - Passwords are hashed using Werkzeug's security functions
 - Password hashing uses secure algorithms with salting
-
-### Rate Limiting
-- API endpoints are protected against abuse with rate limiting
-- Default limits: 200 requests per day, 50 requests per hour
 
 ### CSRF Protection
 - Flask-WTF's CSRF protection is enabled by default
@@ -977,6 +1123,7 @@ For production deployment, consider the following:
   - **Solution**: Ensure AJAX functionality is working correctly
   - **Solution**: Check browser console for JavaScript errors
   - **Solution**: Verify that the server is responding with the correct JSON format
+  - **Solution**: Confirm that loading indicators appear during form submissions
 
 ### Getting Help
 If you encounter issues not covered here:

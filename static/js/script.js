@@ -4,6 +4,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Prism.js line numbers
     Prism.plugins.lineNumbers.init();
 
+    // Handle form submissions that need loading spinners
+    // This handles both "Reply Topic" and "New Topic" forms
+    const formsWithSpinner = document.querySelectorAll('form[action^="/post/new/"], form[action^="/topic/new/"]');
+    formsWithSpinner.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+
+            // Create and show loading spinner
+            submitButton.innerHTML = '<div class="loading-spinner"></div> Posting...';
+            submitButton.disabled = true;
+
+            // Allow the form to submit normally
+            // The page will reload after submission
+        });
+    });
+
     // Handle comment form submissions with AJAX
     const commentForms = document.querySelectorAll('form[action^="/comment/new/"]');
     commentForms.forEach(form => {
@@ -14,6 +31,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const postId = form.action.split('/').pop();
             const commentsContainer = form.closest('.flex-grow-1').querySelector('.comments');
             const textarea = form.querySelector('textarea');
+            const submitButton = form.querySelector('button[type="submit"]');
+
+            // Store original button text
+            const originalButtonText = submitButton.innerHTML;
+
+            // Create and show loading spinner
+            submitButton.innerHTML = '<div class="loading-spinner"></div> Posting...';
+            submitButton.disabled = true;
 
             // Create comments container if it doesn't exist
             let commentsDiv = commentsContainer;
@@ -61,10 +86,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Highlight code in the new comment
                 Prism.highlightAllUnder(commentDiv);
+
+                // Restore button state
+                submitButton.innerHTML = originalButtonText;
+                submitButton.disabled = false;
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('An error occurred while submitting your comment. Please try again.');
+
+                // Restore button state on error
+                submitButton.innerHTML = originalButtonText;
+                submitButton.disabled = false;
             });
         });
     });
