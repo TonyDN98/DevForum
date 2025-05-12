@@ -218,48 +218,135 @@ Rate limiting is configured through Flask-Limiter with default limits of:
 - 200 requests per day
 - 50 requests per hour
 
-## Usage Guide
+## User Documentation
 
-### User Registration and Login
+### Getting Started
+
+#### What is Dev Forum?
+Dev Forum is a community platform where developers can discuss programming topics, share knowledge, ask questions, and connect with other developers. The forum is organized into categories, topics, and posts, making it easy to find and participate in discussions that interest you.
+
+#### System Requirements
+- A modern web browser (Chrome, Firefox, Safari, Edge)
+- Internet connection
+- JavaScript enabled
+- Cookies enabled (for session management)
+
+#### First-Time User Guide
+1. **Visit the Homepage**: Navigate to the Dev Forum website to see available discussion categories
+2. **Create an Account**: Click "Register" in the navigation bar to create a new account
+3. **Explore Categories**: Browse through the categories to find topics that interest you
+4. **Join Discussions**: Read existing topics or create new ones to participate in the community
+
+### Account Management
+
+#### Registration
 1. Click "Register" in the navigation bar
-2. Fill in the registration form with username, email, and password
-3. Submit the form to create your account
-4. Log in using your credentials
+2. Fill in the required fields:
+   - Username (must be unique)
+   - Email address (must be unique)
+   - Password (choose a secure password)
+3. Click "Register" to create your account
+4. You'll be redirected to the login page with a success message
 
-### Browsing the Forum
-1. The home page displays all categories
-2. Click on a category to view topics within that category
-3. Click on a topic to view posts and discussions
-4. Use pagination controls to navigate through multiple pages
+#### Login
+1. Click "Login" in the navigation bar
+2. Enter your username and password
+3. Click "Login" to access your account
+4. If successful, you'll be redirected to the homepage
 
-### Creating Content
+#### Password Management
+1. **Changing Your Password**:
+   - Click on your username in the navigation bar
+   - Select "Profile" from the dropdown menu
+   - Click "Edit Profile"
+   - Scroll to the password section
+   - Enter your current password
+   - Enter and confirm your new password
+   - Click "Update Profile" to save changes
+
+#### Profile Management
+1. **Viewing Your Profile**:
+   - Click on your username in the navigation bar
+   - Select "Profile" from the dropdown menu
+   - View your profile information, including join date and post history
+
+2. **Updating Your Profile**:
+   - Click "Edit Profile" on your profile page
+   - Update your bio with information about yourself
+   - Click "Update Profile" to save changes
+
+3. **Viewing Other Users' Profiles**:
+   - Click on a username anywhere in the forum
+   - View their profile information and post history
+
+### Navigation Guide
+
+#### Main Navigation
+- **Home**: Click the "Dev Forum" logo or "Home" link to return to the homepage
+- **Search**: Use the search box in the navigation bar to find topics and posts
+- **Messages**: Click the envelope icon to access your private messages
+- **User Menu**: Click your username to access profile, messages, and logout options
+- **Admin**: Admin users will see an "Admin" link for accessing administrative functions
+
+#### Breadcrumb Navigation
+- Breadcrumbs appear at the top of category and topic pages
+- They show your current location in the forum hierarchy
+- Click any breadcrumb link to navigate to that level
+
+#### Pagination
+- When viewing lists of topics or posts, pagination controls appear at the bottom
+- Use "Previous" and "Next" links to navigate between pages
+- Click specific page numbers to jump to that page
+
+### Using the Forum
+
+#### Browsing Content
+1. **Viewing Categories**:
+   - The homepage displays all available categories
+   - Each category shows its name, description, and topic count
+
+2. **Viewing Topics in a Category**:
+   - Click on a category name to view all topics in that category
+   - Topics are sorted by most recent activity
+   - Each topic shows its title, description, and post count
+
+3. **Viewing Posts in a Topic**:
+   - Click on a topic title to view all posts in that topic
+   - Posts are displayed chronologically
+   - Each post shows the author, content, and timestamp
+
+#### Creating Content
 1. **Creating a Topic**:
    - Navigate to the desired category
    - Click "New Topic"
-   - Fill in the title, optional description, and content
-   - Submit the form
+   - Fill in the required fields:
+     - Title: A clear, descriptive title for your topic
+     - Description (optional): A brief summary of the topic
+     - Content: The main body of your first post
+   - Click "Create Topic" to submit
 
 2. **Replying to a Topic**:
    - Navigate to the topic
-   - Click "Reply"
-   - Enter your content
-   - Submit the form
+   - Click "Reply" at the top of the page or scroll to the bottom
+   - Enter your content in the text area
+   - Click "Post Reply" to submit
 
-3. **Adding Comments**:
-   - Navigate to a post
-   - Use the comment form below the post
-   - Enter your comment
-   - Submit the form
+3. **Adding Comments to Posts**:
+   - Navigate to a post within a topic
+   - Find the comment form below the post
+   - Enter your comment in the text area
+   - Click "Comment" to submit
    - Comments appear instantly without page reload
-   - Real-time updates provide immediate feedback
 
 4. **Using Code Snippets**:
-   1. Type three backticks (```)
-   2. Immediately type the language name (e.g., python, javascript, css)
-   3. Press Enter to start a new line
-   4. Type or paste your code
-   5. Press Enter to start a new line after your code
-   6. Type three backticks (```) to close the code block
+   - When creating topics, replies, or comments, you can include formatted code snippets
+   - To add a code snippet:
+     1. Type three backticks (```)
+     2. Immediately type the language name (e.g., python, javascript, css)
+     3. Press Enter to start a new line
+     4. Type or paste your code
+     5. Press Enter to start a new line after your code
+     6. Type three backticks (```) to close the code block
 
    - **Supported Languages**: Python, JavaScript, CSS, HTML, Java, C#, PHP, and Plain Text
 
@@ -269,46 +356,136 @@ Rate limiting is configured through Flask-Limiter with default limits of:
          print("Hello, world!")
      ```
 
-   - **Troubleshooting**:
-     - Make sure there's a newline after the language name
-     - Make sure there's a newline before the closing backticks
-     - If syntax highlighting doesn't work, check that you've spelled the language name correctly
-
-### Messaging
-1. **Viewing Messages**:
-   - Click on your username in the navigation bar
-   - Select "Messages" from the dropdown menu
+#### Private Messaging
+1. **Viewing Your Messages**:
+   - Click the envelope icon in the navigation bar or
+   - Click your username and select "Messages" from the dropdown menu
    - View a list of all your conversations
-   - Click on a conversation to view the messages
+   - Unread messages are highlighted and show a count indicator
 
-2. **Sending Messages**:
-   - Navigate to a user's profile
+2. **Starting a New Conversation**:
+   - Navigate to a user's profile by clicking their username
    - Click "Send Message"
-   - Enter your message
-   - Click "Send Message"
+   - Enter your message in the text area
+   - Click "Send Message" to start the conversation
 
 3. **Replying to Messages**:
-   - Navigate to a conversation
+   - Click on a conversation in your messages list
    - Type your reply in the text box at the bottom
-   - Click "Send"
+   - Click "Send" to submit your reply
 
-### User Profile
-1. Click on your username in the navigation bar
-2. Select "Profile" to view your profile
-3. Click "Edit Profile" to update your bio or change your password
+#### Searching
+1. **Basic Search**:
+   - Enter keywords in the search box in the navigation bar
+   - Click the search button or press Enter
+   - View results showing matching topics and posts
 
-### Admin Functions
-1. Log in as an admin user
+2. **Search Tips**:
+   - Use specific keywords for better results
+   - Search for exact phrases by using quotation marks (e.g., "flask tutorial")
+   - Include code-specific terms when searching for programming topics
+
+### Admin Features
+
+#### Accessing Admin Functions
+1. Log in with an admin account
 2. Click "Admin" in the navigation bar
-3. From the admin dashboard, you can:
-   - View forum statistics
-   - Manage users
-   - Create new categories
+3. View the admin dashboard
 
-### Search
-1. Use the search box in the navigation bar
-2. Enter keywords to search for
-3. View results showing matching topics and posts
+#### Managing Categories
+1. **Creating Categories**:
+   - From the admin dashboard, click "New Category"
+   - Enter a name and description for the category
+   - Click "Create Category" to add it to the forum
+
+2. **Viewing Category Statistics**:
+   - The admin dashboard shows statistics for all categories
+   - View topic counts and activity levels
+
+#### Managing Users
+1. **Viewing User Information**:
+   - The admin dashboard displays a list of all registered users
+   - View usernames, email addresses, and join dates
+
+### Troubleshooting
+
+#### Common Issues and Solutions
+
+1. **Can't Log In**:
+   - Verify that you're using the correct username and password
+   - Check if Caps Lock is enabled
+   - Try resetting your password if you've forgotten it
+   - Clear your browser cookies and try again
+
+2. **Code Formatting Issues**:
+   - Make sure there's a newline after the language name
+   - Make sure there's a newline before the closing backticks
+   - Verify that you've spelled the language name correctly
+   - Check that you're using three backticks (```) at the beginning and end
+
+3. **Post Not Appearing**:
+   - Refresh the page to ensure you're seeing the latest content
+   - Check if your post violates any forum guidelines
+   - Verify that you completed the submission process
+
+4. **Search Not Finding Expected Results**:
+   - Try using different keywords
+   - Check for typos in your search terms
+   - Use more specific search terms
+   - Try searching for partial words if full words don't yield results
+
+### Frequently Asked Questions
+
+#### General Questions
+
+1. **Is registration required to view content?**
+   - No, you can browse categories and read topics without registering
+   - Registration is required to create topics, post replies, or send messages
+
+2. **How do I change my username?**
+   - Usernames cannot be changed after registration
+   - Contact an administrator if you need to change your username
+
+3. **Can I delete my account?**
+   - Contact an administrator to request account deletion
+
+4. **How do I report inappropriate content?**
+   - Contact an administrator with details about the content
+
+#### Content Questions
+
+1. **What types of content are allowed?**
+   - Technical discussions related to programming and development
+   - Questions about coding problems
+   - Sharing of knowledge and resources
+   - Professional networking
+
+2. **Are there any content restrictions?**
+   - No offensive or inappropriate content
+   - No spam or excessive self-promotion
+   - No posting of private or confidential information
+   - No plagiarism or copyright violations
+
+3. **Can I edit or delete my posts?**
+   - Currently, editing and deleting posts is not supported
+   - Contact an administrator if you need a post edited or removed
+
+#### Technical Questions
+
+1. **What technologies does Dev Forum use?**
+   - Flask (Python web framework)
+   - SQLAlchemy (ORM for database interactions)
+   - Bootstrap (Frontend framework)
+   - Prism.js (Code syntax highlighting)
+
+2. **Is my data secure?**
+   - Passwords are securely hashed
+   - The application uses CSRF protection
+   - Rate limiting is implemented to prevent abuse
+
+3. **Does Dev Forum work on mobile devices?**
+   - Yes, the forum is responsive and works on mobile devices
+   - All features are accessible on smaller screens
 
 ## API Documentation
 
@@ -353,6 +530,271 @@ The application provides the following routes:
 - `404`: Page not found
 - `500`: Internal server error
 - `403`: Forbidden access
+
+## Code Documentation
+
+### Application Overview
+
+Dev Forum is a comprehensive community forum for developers to discuss and share knowledge about various programming topics. This Flask application provides a structured platform for technical discussions, knowledge sharing, and community building among developers. It includes features such as user authentication, forum categories, topics, posts, comments, and private messaging.
+
+### Database Models
+
+#### User Model
+
+```python
+class User(db.Model, UserMixin):
+    """
+    User model representing forum members.
+
+    This class stores user information including authentication details,
+    profile data, and relationships to user-generated content.
+
+    Attributes:
+        id: The primary key for the user.
+        username: The user's display name (unique).
+        email: The user's email address (unique).
+        password_hash: Securely hashed password.
+        bio: Optional user biography or description.
+        join_date: When the user registered.
+        is_admin: Whether the user has administrator privileges.
+        posts: Relationship to posts created by this user.
+        comments: Relationship to comments created by this user.
+    """
+```
+
+#### Category Model
+
+```python
+class Category(db.Model):
+    """
+    Category model representing forum sections.
+
+    Categories are the top-level organizational structure of the forum,
+    containing topics that group related discussions.
+
+    Attributes:
+        id: The primary key for the category.
+        name: The display name of the category.
+        description: Optional description of the category's purpose.
+        topics: Relationship to topics within this category.
+    """
+```
+
+#### Topic Model
+
+```python
+class Topic(db.Model):
+    """
+    Topic model representing discussion threads.
+
+    Topics are individual discussion threads within categories, containing
+    posts from users discussing a specific subject.
+
+    Attributes:
+        id: The primary key for the topic.
+        title: The title of the discussion topic.
+        description: Optional description providing more context.
+        created_at: When the topic was created.
+        category_id: Foreign key to the category containing this topic.
+        posts: Relationship to posts within this topic.
+    """
+```
+
+#### Post Model
+
+```python
+class Post(db.Model):
+    """
+    Post model representing individual messages in a topic.
+
+    Posts are the primary content of the forum, containing user messages
+    within topics. Each post can have multiple comments.
+
+    Attributes:
+        id: The primary key for the post.
+        content: The text content of the post.
+        created_at: When the post was created.
+        updated_at: When the post was last edited.
+        user_id: Foreign key to the user who created the post.
+        topic_id: Foreign key to the topic containing this post.
+        comments: Relationship to comments on this post.
+    """
+```
+
+#### Comment Model
+
+```python
+class Comment(db.Model):
+    """
+    Comment model representing responses to posts.
+
+    Comments allow users to respond directly to specific posts,
+    creating threaded discussions within topics.
+
+    Attributes:
+        id: The primary key for the comment.
+        content: The text content of the comment.
+        created_at: When the comment was created.
+        updated_at: When the comment was last edited.
+        user_id: Foreign key to the user who created the comment.
+        post_id: Foreign key to the post this comment responds to.
+    """
+```
+
+#### Message Model
+
+```python
+class Message(db.Model):
+    """
+    Message model representing private communications between users.
+
+    Messages enable direct, private communication between forum users
+    outside of the public discussion threads.
+
+    Attributes:
+        id: The primary key for the message.
+        content: The text content of the message.
+        created_at: When the message was sent.
+        is_read: Whether the recipient has read the message.
+        sender_id: Foreign key to the user who sent the message.
+        recipient_id: Foreign key to the user receiving the message.
+        sender: Relationship to the sending user.
+        recipient: Relationship to the receiving user.
+    """
+```
+
+### Template Filters
+
+#### nl2br Filter
+
+```python
+@app.template_filter('nl2br')
+def nl2br(value):
+    """
+    Convert newlines to HTML line breaks.
+
+    This filter is used in templates to convert newline characters in text
+    to HTML <br> tags, making text display properly formatted in HTML.
+
+    Args:
+        value: The string to process.
+
+    Returns:
+        Markup: A safe HTML string with newlines converted to <br> tags.
+    """
+```
+
+#### format_content Filter
+
+```python
+@app.template_filter('format_content')
+def format_content(value):
+    """
+    Format content with code highlighting and line breaks.
+
+    This filter processes text content to:
+    1. Convert code blocks wrapped in triple backticks to HTML with syntax highlighting
+    2. Apply line breaks to regular text (outside code blocks)
+
+    Args:
+        value: The string content to format.
+
+    Returns:
+        Markup: A safe HTML string with formatted content.
+    """
+```
+
+#### time_since Filter
+
+```python
+@app.template_filter('time_since')
+def time_since(dt):
+    """
+    Format a datetime into a relative time string.
+
+    This filter converts a datetime object into a human-readable string
+    representing the time elapsed since that datetime (e.g., "5 minutes ago",
+    "3 days ago", "1 year ago").
+
+    Args:
+        dt: The datetime object to format.
+
+    Returns:
+        str: A human-readable string representing the elapsed time.
+    """
+```
+
+### Route Functions
+
+#### Index Route
+
+```python
+@app.route('/')
+def index():
+    """
+    Render the homepage of the forum.
+
+    This route displays all categories, along with forum statistics
+    such as the total number of topics and users.
+
+    Returns:
+        Response: Rendered index.html template with categories and statistics.
+    """
+```
+
+#### Register Route
+
+```python
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """
+    Handle user registration.
+
+    GET: Display the registration form.
+    POST: Process the registration form, create a new user if validation passes.
+
+    If the user is already authenticated, they are redirected to the homepage.
+
+    Returns:
+        Response: Rendered register.html template or redirect to login page
+                 after successful registration.
+    """
+```
+
+#### Login Route
+
+```python
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """
+    Handle user login.
+
+    GET: Display the login form.
+    POST: Process the login form, authenticate the user if credentials are valid.
+
+    If the user is already authenticated, they are redirected to the homepage.
+
+    Returns:
+        Response: Rendered login.html template or redirect to next page
+                 after successful login.
+    """
+```
+
+#### Utility Processor
+
+```python
+@app.context_processor
+def utility_processor():
+    """
+    Provide utility functions to all templates.
+
+    This context processor makes various helper functions available in all templates,
+    allowing them to access common data like recent topics, post counts, etc.
+
+    Returns:
+        dict: A dictionary of functions that can be called from templates.
+    """
+```
 
 ## Project Structure
 
