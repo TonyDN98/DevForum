@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisioSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Database Name="DevForum">
+    <Tables>
+      <Table Name="User">
+        <Column Name="id" Type="Integer" PrimaryKey="true" AutoIncrement="true" />
+        <Column Name="username" Type="String" Length="80" NotNull="true" Unique="true" Indexed="true" />
+        <Column Name="email" Type="String" Length="120" NotNull="true" Unique="true" Indexed="true" />
+        <Column Name="password_hash" Type="String" Length="128" />
+        <Column Name="bio" Type="Text" Nullable="true" />
+        <Column Name="join_date" Type="DateTime" Default="CURRENT_TIMESTAMP" Indexed="true" />
+        <Column Name="is_admin" Type="Boolean" Default="false" />
+      </Table>
+      
+      <Table Name="Category">
+        <Column Name="id" Type="Integer" PrimaryKey="true" AutoIncrement="true" />
+        <Column Name="name" Type="String" Length="100" NotNull="true" Indexed="true" />
+        <Column Name="description" Type="Text" Nullable="true" />
+      </Table>
+      
+      <Table Name="Topic">
+        <Column Name="id" Type="Integer" PrimaryKey="true" AutoIncrement="true" />
+        <Column Name="title" Type="String" Length="100" NotNull="true" Indexed="true" />
+        <Column Name="description" Type="Text" Nullable="true" />
+        <Column Name="created_at" Type="DateTime" Default="CURRENT_TIMESTAMP" Indexed="true" />
+        <Column Name="category_id" Type="Integer" NotNull="true" Indexed="true" ForeignKey="true" References="Category.id" />
+      </Table>
+      
+      <Table Name="Post">
+        <Column Name="id" Type="Integer" PrimaryKey="true" AutoIncrement="true" />
+        <Column Name="content" Type="Text" NotNull="true" />
+        <Column Name="created_at" Type="DateTime" Default="CURRENT_TIMESTAMP" Indexed="true" />
+        <Column Name="updated_at" Type="DateTime" Default="CURRENT_TIMESTAMP" OnUpdate="CURRENT_TIMESTAMP" />
+        <Column Name="user_id" Type="Integer" NotNull="true" Indexed="true" ForeignKey="true" References="User.id" />
+        <Column Name="topic_id" Type="Integer" NotNull="true" Indexed="true" ForeignKey="true" References="Topic.id" />
+      </Table>
+      
+      <Table Name="Comment">
+        <Column Name="id" Type="Integer" PrimaryKey="true" AutoIncrement="true" />
+        <Column Name="content" Type="Text" NotNull="true" />
+        <Column Name="created_at" Type="DateTime" Default="CURRENT_TIMESTAMP" Indexed="true" />
+        <Column Name="updated_at" Type="DateTime" Default="CURRENT_TIMESTAMP" OnUpdate="CURRENT_TIMESTAMP" />
+        <Column Name="user_id" Type="Integer" NotNull="true" Indexed="true" ForeignKey="true" References="User.id" />
+        <Column Name="post_id" Type="Integer" NotNull="true" Indexed="true" ForeignKey="true" References="Post.id" />
+      </Table>
+      
+      <Table Name="Message">
+        <Column Name="id" Type="Integer" PrimaryKey="true" AutoIncrement="true" />
+        <Column Name="content" Type="Text" NotNull="true" />
+        <Column Name="created_at" Type="DateTime" Default="CURRENT_TIMESTAMP" Indexed="true" />
+        <Column Name="is_read" Type="Boolean" Default="false" />
+        <Column Name="sender_id" Type="Integer" NotNull="true" Indexed="true" ForeignKey="true" References="User.id" />
+        <Column Name="recipient_id" Type="Integer" NotNull="true" Indexed="true" ForeignKey="true" References="User.id" />
+      </Table>
+    </Tables>
+    
+    <Relationships>
+      <Relationship Name="User_Post" Type="OneToMany">
+        <From Table="User" Column="id" />
+        <To Table="Post" Column="user_id" />
+      </Relationship>
+      
+      <Relationship Name="User_Comment" Type="OneToMany">
+        <From Table="User" Column="id" />
+        <To Table="Comment" Column="user_id" />
+      </Relationship>
+      
+      <Relationship Name="User_SentMessages" Type="OneToMany">
+        <From Table="User" Column="id" />
+        <To Table="Message" Column="sender_id" />
+      </Relationship>
+      
+      <Relationship Name="User_ReceivedMessages" Type="OneToMany">
+        <From Table="User" Column="id" />
+        <To Table="Message" Column="recipient_id" />
+      </Relationship>
+      
+      <Relationship Name="Category_Topic" Type="OneToMany">
+        <From Table="Category" Column="id" />
+        <To Table="Topic" Column="category_id" />
+      </Relationship>
+      
+      <Relationship Name="Topic_Post" Type="OneToMany">
+        <From Table="Topic" Column="id" />
+        <To Table="Post" Column="topic_id" />
+      </Relationship>
+      
+      <Relationship Name="Post_Comment" Type="OneToMany">
+        <From Table="Post" Column="id" />
+        <To Table="Comment" Column="post_id" />
+      </Relationship>
+    </Relationships>
+  </Database>
+</VisioSchema>
